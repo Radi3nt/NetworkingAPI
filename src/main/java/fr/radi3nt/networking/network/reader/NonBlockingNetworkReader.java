@@ -13,81 +13,79 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class NonBlockingNetworkReader implements NetworkReader {
 
     private final Queue<ReadablePacketBuffer> packetBuffers = new ConcurrentLinkedQueue<>();
-    private final InputStream originalInputStream;
+    private final InputStream socketInputStream;
     private ReceivedPacketInfo receivedPacketInfo;
 
-    private final PipedInputStream pipedInputStream;
-    private final PipedOutputStream pipedOutputStream;
-    private final DataInputStream inputStream;
+    private final PipedOutputStream bufferOutStream;
+    private final InputStream bufferInStream;
+    private final DataInputStream inStream;
 
-    public NonBlockingNetworkReader(InputStream inputStream) throws IOException {
-        this.originalInputStream = inputStream;
-        this.pipedInputStream = new PipedInputStream();
-        this.pipedOutputStream = new PipedOutputStream(pipedInputStream);
-        this.inputStream = new DataInputStream(pipedInputStream);
+    public NonBlockingNetworkReader(InputStream socketInputStream) throws IOException {
+        this.socketInputStream = socketInputStream;
+        this.bufferOutStream = new PipedOutputStream();
+        this.bufferInStream = new PipedInputStream(bufferOutStream);
+
+        inStream = new DataInputStream(bufferInStream);
     }
 
     @Override
     public void read() throws NetworkException {
         try {
             if (receivedPacketInfo!=null) {
-                readIfComplete(true);
+                readActualPacket();
             } else {
-                int available = inputStream.available();
+                readSmallByteAmount();
+
+                int available = bufferInStream.available();
                 if (available>=Integer.BYTES) {
                     receivePacket();
-                } else {
-                    readOriginal();
-                    available = inputStream.available();
-                    if (available>=Integer.BYTES) {
-                        receivePacket();
-                    }
                 }
             }
         } catch (IOException e) {
-            throw new NetworkException(e);
+            throw new ConnectionClosedException();
         }
     }
 
-    private void receivePacket() throws IOException, NetworkException {
-        int packetSize = inputStream.readInt();
+    private void receivePacket() throws IOException {
+        int packetSize = inStream.readInt();
+
         receivedPacketInfo = new ReceivedPacketInfo(packetSize);
-        readIfComplete(true);
+        readStream(inStream);
+        readActualPacket();
     }
 
-    private void readOriginal() throws NetworkException, IOException {
-        int available = originalInputStream.available();
-        byte[] bytes = new byte[Math.max(1, available)];
-        int readBytes = originalInputStream.read(bytes);
+    private void readSmallByteAmount() throws NetworkException, IOException {
+        int available = socketInputStream.available();
+        byte[] bytes = new byte[Math.min(Math.max(1, available), 4)];
+        int readBytes = socketInputStream.read(bytes);
         if (readBytes==-1) {
             throw new ConnectionClosedException();
         } else {
-            pipedOutputStream.write(bytes, 0, readBytes);
+            bufferOutStream.write(bytes, 0, readBytes);
         }
     }
 
-    private void readIfComplete(boolean readOriginal) throws IOException, NetworkException {
-        int available = inputStream.available();
-        int packetSize = receivedPacketInfo.getSize();
-        if (available >=packetSize) {
-            int readBytes = 0;
-            byte[] bytes = new byte[packetSize];
-
-            while (readBytes<packetSize) {
-                readBytes += inputStream.read(bytes, readBytes, packetSize - readBytes);
-            }
-
-            ByteBuffer buffer = ByteBuffer.wrap(bytes);
-            buffer.limit(packetSize);
-
-            packetBuffers.add(new PacketDataByteBuffer(buffer));
-            receivedPacketInfo = null;
+    private void readActualPacket() throws IOException {
+        if (receivedPacketInfo.getCurrentRead().unfinished()) {
+            receivedPacketInfo.getCurrentRead().blockingRead(socketInputStream);
+            finishPacket();
         } else {
-            if (readOriginal) {
-                readOriginal();
-                readIfComplete(false);
-            }
+            finishPacket();
         }
+    }
+
+    private void finishPacket() {
+        byte[] bytes = receivedPacketInfo.getCurrentRead().bytes();
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        buffer.limit(bytes.length);
+
+        packetBuffers.add(new PacketDataByteBuffer(buffer));
+        receivedPacketInfo = null;
+    }
+
+    private void readStream(InputStream stream) throws IOException {
+        if (receivedPacketInfo.getCurrentRead().unfinished())
+            receivedPacketInfo.getCurrentRead().nonBlockingRead(stream);
     }
 
     @Override

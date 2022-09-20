@@ -22,9 +22,13 @@ public class SizingNetworkWriter implements NetworkWriter {
     public void write(ReadablePacketBuffer buffer) throws NetworkException {
         try {
             byte[] array = buffer.array();
-            dataOutputStream.writeInt(array.length);
-            dataOutputStream.write(array);
-            dataOutputStream.flush();
+
+            synchronized (dataOutputStream) {
+                dataOutputStream.writeInt(array.length);
+                dataOutputStream.flush();
+                dataOutputStream.write(array);
+                dataOutputStream.flush();
+            }
         } catch (IOException e) {
             throw new NetworkException(e);
         }
