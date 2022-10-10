@@ -4,7 +4,6 @@ import fr.radi3nt.networking.connection.ConnectingConnection;
 import fr.radi3nt.networking.exceptions.EncodeException;
 import fr.radi3nt.networking.exceptions.NetworkException;
 import fr.radi3nt.networking.network.socket.SocketAddress;
-import fr.radi3nt.networking.packets.Packet;
 import fr.radi3nt.networking.packets.PacketRead;
 import fr.radi3nt.networking.packets.PacketWrite;
 import fr.radi3nt.networking.packets.buffer.ReadablePacketBuffer;
@@ -12,8 +11,9 @@ import fr.radi3nt.networking.packets.buffer.WritablePacketBuffer;
 import fr.radi3nt.networking.packets.buffer.serializers.IntReader;
 import fr.radi3nt.networking.packets.buffer.serializers.IntWriter;
 import fr.radi3nt.networking.protocol.SizedIdPacketProtocol;
-import fr.radi3nt.networking.protocol.id.PacketFactory;
+import fr.radi3nt.networking.protocol.id.factories.PacketFactory;
 import fr.radi3nt.networking.protocol.id.PacketFactoryProtocolIdentification;
+import fr.radi3nt.networking.protocol.id.factories.PacketIdentifier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,8 +48,10 @@ public class MainNetworkingAPIDemoClient {
     public static PacketFactoryProtocolIdentification createIdentification() {
         Map<Integer, PacketFactory> packetFactoryMap = new HashMap<>();
         packetFactoryMap.put(1, new TestPacketFactory());
+        Map<Integer, PacketIdentifier> packetIdentifierMap = new HashMap<>();
+        packetIdentifierMap.put(1, new TestPacketFactory());
 
-        return new PacketFactoryProtocolIdentification(packetFactoryMap);
+        return new PacketFactoryProtocolIdentification(packetFactoryMap, packetIdentifierMap);
     }
 
     public static class TestPacketReadWrite implements PacketRead, PacketWrite {
@@ -78,9 +80,9 @@ public class MainNetworkingAPIDemoClient {
         }
     }
 
-    private static class TestPacketFactory implements PacketFactory {
+    private static class TestPacketFactory implements PacketFactory, PacketIdentifier {
         @Override
-        public boolean isPacket(Packet packet) {
+        public boolean isPacket(PacketWrite packet) {
             return packet instanceof TestPacketReadWrite;
         }
 
