@@ -35,4 +35,8 @@ public class ServerConnection extends InteractiveConnection {
     protected NetworkHolder createNetworkHolder() {
         return new ReadySocketNetworkHolder(new SocketNetworkTunnel(socket));
     }
+
+    public boolean isClosed() {
+        return networkHolder.isClosed();
+    }
 }
