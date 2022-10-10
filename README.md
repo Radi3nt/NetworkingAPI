@@ -54,6 +54,8 @@ Clone the repo
 <!-- USAGE EXAMPLES -->
 ## Usage
 
+#### *Some of the classes don't exist anymore, I have to rewrite this section. Still pretty much the same though*
+
 ### Packets
 
 This librairy uses packets to communicate on a connection.
