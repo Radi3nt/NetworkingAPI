@@ -5,9 +5,7 @@ import fr.radi3nt.networking.packets.buffer.serializers.PacketDataSerializerWrit
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 public class PacketDataStreamBuffer implements WritablePacketBuffer {
 
@@ -23,7 +21,7 @@ public class PacketDataStreamBuffer implements WritablePacketBuffer {
     public void write(PacketDataSerializerWriter writer) throws EncodeException {
         try {
             writer.write(dataOutputStream);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new EncodeException(e);
         }
     }
