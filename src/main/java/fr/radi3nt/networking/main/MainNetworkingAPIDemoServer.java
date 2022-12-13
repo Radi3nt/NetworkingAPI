@@ -36,17 +36,7 @@ public class MainNetworkingAPIDemoServer {
 
     private static SocketServerConnectionHandler createConnectionHandler() throws NetworkException {
         SizedIdPacketProtocol serverPacketProtocol = new SizedIdPacketProtocol(MainNetworkingAPIDemoClient.createIdentification());
-        return new SocketServerConnectionHandler(serverPacketProtocol, serverConnection -> packetRead -> {
-            System.out.println(packetRead);
-
-            MainNetworkingAPIDemoClient.TestPacketReadWrite testPacketReadWrite = new MainNetworkingAPIDemoClient.TestPacketReadWrite();
-            testPacketReadWrite.number = 4;
-            try {
-                serverConnection.sendPacket(testPacketReadWrite);
-            } catch (NetworkException e) {
-                throw new RuntimeException(e);
-            }
-        }, MainNetworkingAPIDemoClient.PORT);
+        return new SocketServerConnectionHandler(serverPacketProtocol, MainNetworkingAPIDemoClient.PORT);
     }
 
 }

@@ -11,8 +11,8 @@ import fr.radi3nt.networking.packets.buffer.WritablePacketBuffer;
 import fr.radi3nt.networking.packets.buffer.serializers.IntReader;
 import fr.radi3nt.networking.packets.buffer.serializers.IntWriter;
 import fr.radi3nt.networking.protocol.SizedIdPacketProtocol;
-import fr.radi3nt.networking.protocol.id.factories.PacketFactory;
 import fr.radi3nt.networking.protocol.id.PacketFactoryProtocolIdentification;
+import fr.radi3nt.networking.protocol.id.factories.PacketFactory;
 import fr.radi3nt.networking.protocol.id.factories.PacketIdentifier;
 
 import java.util.HashMap;
@@ -42,7 +42,9 @@ public class MainNetworkingAPIDemoClient {
     private static ConnectingConnection createConnection() throws NetworkException {
         PacketFactoryProtocolIdentification packetFactoryProtocolIdentification = createIdentification();
         SizedIdPacketProtocol simplePacketProtocol = new SizedIdPacketProtocol(packetFactoryProtocolIdentification);
-        return new ConnectingConnection(new SocketAddress("localhost", PORT), simplePacketProtocol, System.out::println);
+        ConnectingConnection localhost = new ConnectingConnection(new SocketAddress("localhost", PORT), simplePacketProtocol);
+        localhost.getListener().add(System.out::println);
+        return localhost;
     }
 
     public static PacketFactoryProtocolIdentification createIdentification() {
