@@ -14,8 +14,11 @@ public class CurrentRead { //todo !!!!!
 
     public void nonBlockingRead(InputStream stream) throws IOException {
         int available = stream.available();
-        while (currentRead<available && unfinished()) {
-            currentRead += stream.read(bytes, currentRead, Math.min(available, bytes.length) - currentRead);
+        int localReadBytes = 0;
+        while (localReadBytes<available && unfinished()) {
+            int readBytes = stream.read(bytes, currentRead, Math.min(available, bytes.length) - currentRead);
+            currentRead += readBytes;
+            localReadBytes+=readBytes;
         }
     }
 

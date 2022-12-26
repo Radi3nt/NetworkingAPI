@@ -56,7 +56,10 @@ public class NonBlockingNetworkReader implements NetworkReader {
 
     private void readSmallByteAmount() throws NetworkException, IOException {
         int available = socketInputStream.available();
-        byte[] bytes = new byte[Math.min(Math.max(1, available), 4)];
+        byte[] bytes = new byte[Math.min(Math.max(1, available), Integer.BYTES-inStream.available())];
+        if (bytes.length==0)
+            return;
+
         int readBytes = socketInputStream.read(bytes);
         if (readBytes==-1) {
             throw new ConnectionClosedException();

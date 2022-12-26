@@ -2,17 +2,22 @@ package fr.radi3nt.networking.connection;
 
 import fr.radi3nt.networking.exceptions.NetworkException;
 import fr.radi3nt.networking.network.NetworkHolder;
-import fr.radi3nt.networking.network.NetworkTunnel;
 import fr.radi3nt.networking.network.listener.TunnelListener;
 import fr.radi3nt.networking.packets.PacketWrite;
 import fr.radi3nt.networking.packets.buffer.ReadablePacketBuffer;
 import fr.radi3nt.networking.protocol.PacketProtocol;
+
+import java.util.Arrays;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public abstract class AbstractConnection implements Connection {
 
     protected NetworkHolder networkHolder;
     protected PacketProtocol packetProtocol;
     protected TunnelListener tunnelListener;
+
+    protected Queue<PacketWrite> packetWrites = new ConcurrentLinkedQueue<>();
 
     public AbstractConnection() {
 
@@ -25,6 +30,7 @@ public abstract class AbstractConnection implements Connection {
     }
 
     public abstract void attachListener();
+    public abstract void attachSender();
 
     protected abstract TunnelListener createTunnelListener();
     protected abstract PacketProtocol createPacketProtocol();
@@ -32,9 +38,16 @@ public abstract class AbstractConnection implements Connection {
 
     @Override
     public void sendPacket(PacketWrite... packets) throws NetworkException {
+        packetWrites.addAll(Arrays.asList(packets));
+    }
+
+    public void sendPackets() throws NetworkException {
         if (networkHolderInValidState()) {
-            ReadablePacketBuffer packetBuffer = packetProtocol.write(packets);
-            networkHolder.getTunnel().write(packetBuffer);
+            while (!packetWrites.isEmpty()) {
+                PacketWrite packets = packetWrites.poll();
+                ReadablePacketBuffer packetBuffer = packetProtocol.write(packets);
+                networkHolder.getTunnel().write(packetBuffer);
+            }
         } else {
             throw new NetworkException("Network state is invalid");
         }
@@ -43,5 +56,4 @@ public abstract class AbstractConnection implements Connection {
     private boolean networkHolderInValidState() {
         return networkHolder.isOpened() && !networkHolder.isClosed();
     }
-
 }
