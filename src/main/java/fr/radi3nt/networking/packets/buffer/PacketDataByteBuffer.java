@@ -1,8 +1,6 @@
 package fr.radi3nt.networking.packets.buffer;
 
-import fr.radi3nt.networking.exceptions.EncodeException;
 import fr.radi3nt.networking.packets.buffer.serializers.PacketDataSerializerReader;
-import fr.radi3nt.networking.packets.buffer.serializers.PacketDataSerializerWriter;
 
 import java.nio.ByteBuffer;
 

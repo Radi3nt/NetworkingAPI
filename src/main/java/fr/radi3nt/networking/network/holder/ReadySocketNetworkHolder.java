@@ -3,11 +3,9 @@ package fr.radi3nt.networking.network.holder;
 import fr.radi3nt.networking.exceptions.NetworkException;
 import fr.radi3nt.networking.network.NetworkHolder;
 import fr.radi3nt.networking.network.NetworkTunnel;
-import fr.radi3nt.networking.network.socket.SocketAddress;
 import fr.radi3nt.networking.network.socket.SocketNetworkTunnel;
 
 import java.io.IOException;
-import java.net.Socket;
 
 public class ReadySocketNetworkHolder implements NetworkHolder {
 

@@ -4,10 +4,6 @@ import fr.radi3nt.networking.exceptions.NetworkException;
 import fr.radi3nt.networking.network.writer.NetworkWriter;
 import fr.radi3nt.networking.packets.buffer.ReadablePacketBuffer;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 public interface OutputStreamNetworkTunnel extends NetworkTunnel {
 
     @Override

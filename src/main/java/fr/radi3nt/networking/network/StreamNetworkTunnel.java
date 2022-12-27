@@ -1,13 +1,13 @@
 package fr.radi3nt.networking.network;
 
-import fr.radi3nt.networking.exceptions.NetworkException;
 import fr.radi3nt.networking.network.reader.NetworkReader;
 import fr.radi3nt.networking.network.reader.NonBlockingNetworkReader;
 import fr.radi3nt.networking.network.writer.NetworkWriter;
 import fr.radi3nt.networking.network.writer.SizingNetworkWriter;
-import fr.radi3nt.networking.packets.buffer.ReadablePacketBuffer;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public abstract class StreamNetworkTunnel implements NetworkTunnel, InputStreamNetworkTunnel, OutputStreamNetworkTunnel {
 

@@ -3,15 +3,12 @@ package fr.radi3nt.networking.protocol;
 import fr.radi3nt.networking.exceptions.EncodeException;
 import fr.radi3nt.networking.packets.PacketRead;
 import fr.radi3nt.networking.packets.PacketWrite;
-import fr.radi3nt.networking.packets.buffer.PacketDataByteBuffer;
 import fr.radi3nt.networking.packets.buffer.PacketDataStreamBuffer;
 import fr.radi3nt.networking.packets.buffer.ReadablePacketBuffer;
 import fr.radi3nt.networking.packets.buffer.WritablePacketBuffer;
 import fr.radi3nt.networking.packets.buffer.serializers.IntReader;
 import fr.radi3nt.networking.packets.buffer.serializers.IntWriter;
 import fr.radi3nt.networking.protocol.id.PacketProtocolIdentification;
-
-import java.nio.ByteBuffer;
 
 public class SizedIdPacketProtocol implements PacketProtocol {
 

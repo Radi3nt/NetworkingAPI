@@ -1,6 +1,5 @@
 package fr.radi3nt.networking.packets.buffer.serializers;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class DoubleReader implements PacketDataSerializerReader {

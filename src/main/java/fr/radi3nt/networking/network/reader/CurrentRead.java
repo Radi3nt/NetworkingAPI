@@ -3,7 +3,7 @@ package fr.radi3nt.networking.network.reader;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class CurrentRead { //todo !!!!!
+public class CurrentRead {
 
     private final byte[] bytes;
     private int currentRead = 0;
