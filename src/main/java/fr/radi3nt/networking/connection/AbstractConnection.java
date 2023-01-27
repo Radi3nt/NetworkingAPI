@@ -2,6 +2,7 @@ package fr.radi3nt.networking.connection;
 
 import fr.radi3nt.networking.exceptions.NetworkException;
 import fr.radi3nt.networking.network.NetworkHolder;
+import fr.radi3nt.networking.network.listener.CloseListener;
 import fr.radi3nt.networking.network.listener.TunnelListener;
 import fr.radi3nt.networking.packets.PacketWrite;
 import fr.radi3nt.networking.packets.buffer.ReadablePacketBuffer;
@@ -17,7 +18,8 @@ public abstract class AbstractConnection implements Connection {
     protected PacketProtocol packetProtocol;
     protected TunnelListener tunnelListener;
 
-    protected Queue<PacketWrite> packetWrites = new ConcurrentLinkedQueue<>();
+    protected final Queue<PacketWrite> packetWrites = new ConcurrentLinkedQueue<>();
+    protected boolean blocked = false;
 
     public AbstractConnection() {
 
@@ -38,19 +40,62 @@ public abstract class AbstractConnection implements Connection {
 
     @Override
     public void sendPacket(PacketWrite... packets) throws NetworkException {
-        packetWrites.addAll(Arrays.asList(packets));
+        if (!blocked)
+            packetWrites.addAll(Arrays.asList(packets));
     }
 
-    public void sendPackets() throws NetworkException {
+    public void sendPackets() {
+        while (!networkHolder.isClosed()) {
+            try {
+                if (sendPacketsIfNotClosed()) {
+                    break;
+                }
+            } catch (NetworkException e) {
+                break;
+            }
+        }
+        unblockWaitingForPacketsToBeSent();
+    }
+
+    private boolean sendPacketsIfNotClosed() throws NetworkException {
         if (networkHolderInValidState()) {
             while (!packetWrites.isEmpty()) {
                 PacketWrite packets = packetWrites.poll();
                 ReadablePacketBuffer packetBuffer = packetProtocol.write(packets);
+
+                if (networkHolder.isClosed()) {
+                    unblockWaitingForPacketsToBeSent();
+                    return true;
+                }
+
                 networkHolder.getTunnel().write(packetBuffer);
             }
+            if (blocked)
+                if (packetWrites.isEmpty())
+                    unblockWaitingForPacketsToBeSent();
         } else {
+            unblockWaitingForPacketsToBeSent();
             throw new NetworkException("Network state is invalid");
         }
+        return false;
+    }
+
+    private void unblockWaitingForPacketsToBeSent() {
+        synchronized (packetWrites) {
+            packetWrites.notifyAll();
+        }
+    }
+
+    public void blockNewPacketsAndWaitTillAllSentToClose() throws InterruptedException, NetworkException {
+        blocked = true;
+        synchronized (packetWrites) {
+            packetWrites.wait();
+        }
+        this.networkHolder.stop();
+    }
+
+    public void setCloseListener(CloseListener closeListener) {
+        this.networkHolder.getTunnel().setCloseListener(closeListener);
     }
 
     private boolean networkHolderInValidState() {

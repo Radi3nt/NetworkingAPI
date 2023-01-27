@@ -24,11 +24,19 @@ public class ProtocolTunnelListener implements TunnelListener {
             try {
                 readPackets(listener);
             } catch (ConnectionClosedException closedException) {
-                closedException.printStackTrace();
+                closeNetwork();
                 return;
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void closeNetwork() {
+        try {
+            networkHolder.stop();
+        } catch (NetworkException e) {
+            e.printStackTrace();
         }
     }
 

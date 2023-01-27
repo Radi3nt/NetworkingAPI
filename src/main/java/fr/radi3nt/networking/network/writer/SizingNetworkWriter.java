@@ -24,7 +24,6 @@ public class SizingNetworkWriter implements NetworkWriter {
 
             synchronized (dataOutputStream) {
                 dataOutputStream.writeInt(array.length);
-                dataOutputStream.flush();
                 dataOutputStream.write(array);
                 dataOutputStream.flush();
             }
