@@ -10,6 +10,7 @@ import fr.radi3nt.networking.packets.buffer.ReadablePacketBuffer;
 import fr.radi3nt.networking.packets.buffer.WritablePacketBuffer;
 import fr.radi3nt.networking.packets.buffer.serializers.IntReader;
 import fr.radi3nt.networking.packets.buffer.serializers.IntWriter;
+import fr.radi3nt.networking.packets.buffer.serializers.PacketDataSerializerWriter;
 import fr.radi3nt.networking.protocol.SizedIdPacketProtocol;
 import fr.radi3nt.networking.protocol.id.PacketFactoryProtocolIdentification;
 import fr.radi3nt.networking.protocol.id.factories.PacketFactory;
@@ -56,30 +57,13 @@ public class MainNetworkingAPIDemoClient {
         return new PacketFactoryProtocolIdentification(packetFactoryMap, packetIdentifierMap);
     }
 
-    public static class TestPacketReadWrite implements PacketRead, PacketWrite {
-
-        public int number;
-
-        @Override
-        public void read(ReadablePacketBuffer packetBuffer) {
-            IntReader intReader = new IntReader();
-            packetBuffer.read(intReader);
-
-            number = intReader.getIntResult();
+    private static void closeAfterXSeconds(ConnectingConnection interactiveConnection, int seconds) throws NetworkException {
+        try {
+            interactiveConnection.wait(seconds * 1_000L);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-
-        @Override
-        public void write(WritablePacketBuffer packetBuffer) throws EncodeException {
-            IntWriter intWriter = new IntWriter(number);
-            packetBuffer.write(intWriter);
-        }
-
-        @Override
-        public String toString() {
-            return "TestPacketReadWrite{" +
-                    "number=" + number +
-                    '}';
-        }
+        interactiveConnection.close();
     }
 
     private static class TestPacketFactory implements PacketFactory, PacketIdentifier {
@@ -94,12 +78,29 @@ public class MainNetworkingAPIDemoClient {
         }
     }
 
-    private static void closeAfterXSeconds(ConnectingConnection interactiveConnection, int seconds) throws NetworkException {
-        try {
-            Thread.sleep(seconds*1_000L);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+    public static class TestPacketReadWrite implements PacketRead, PacketWrite {
+
+        public int number;
+
+        @Override
+        public void read(ReadablePacketBuffer packetBuffer) {
+            IntReader intReader = new IntReader();
+            packetBuffer.read(intReader);
+
+            number = intReader.getIntResult();
         }
-        interactiveConnection.close();
+
+        @Override
+        public void write(WritablePacketBuffer packetBuffer) throws EncodeException {
+            PacketDataSerializerWriter intWriter = new IntWriter(number);
+            packetBuffer.write(intWriter);
+        }
+
+        @Override
+        public String toString() {
+            return "TestPacketReadWrite{" +
+                    "number=" + number +
+                    '}';
+        }
     }
 }
