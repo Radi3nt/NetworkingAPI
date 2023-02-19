@@ -11,6 +11,8 @@ import fr.radi3nt.networking.protocol.PacketProtocol;
 import java.util.Arrays;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractConnection implements Connection {
 
@@ -20,6 +22,7 @@ public abstract class AbstractConnection implements Connection {
 
     protected final Queue<PacketWrite> packetWrites = new ConcurrentLinkedQueue<>();
     protected boolean blocked = false;
+    protected final Lock blockedLock = new ReentrantLock();
 
     public AbstractConnection() {
 
@@ -40,8 +43,12 @@ public abstract class AbstractConnection implements Connection {
 
     @Override
     public void sendPacket(PacketWrite... packets) throws NetworkException {
-        if (!blocked)
-            packetWrites.addAll(Arrays.asList(packets));
+        if (!blocked) {
+            synchronized (packetWrites) {
+                packetWrites.addAll(Arrays.asList(packets));
+                packetWrites.notifyAll();
+            }
+        }
     }
 
     public void sendPackets() {
@@ -70,9 +77,9 @@ public abstract class AbstractConnection implements Connection {
 
                 networkHolder.getTunnel().write(packetBuffer);
             }
+            waitUntilPacketWritesNotEmpty();
             if (blocked)
-                if (packetWrites.isEmpty())
-                    unblockWaitingForPacketsToBeSent();
+                unblockWaitingForPacketsToBeSent();
         } else {
             unblockWaitingForPacketsToBeSent();
             throw new NetworkException("Network state is invalid");
@@ -80,16 +87,33 @@ public abstract class AbstractConnection implements Connection {
         return false;
     }
 
-    private void unblockWaitingForPacketsToBeSent() {
+    private void waitUntilPacketWritesNotEmpty() {
         synchronized (packetWrites) {
-            packetWrites.notifyAll();
+            if (blocked)
+                return;
+            if (!packetWrites.isEmpty())
+                return;
+            try {
+                packetWrites.wait(1_000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void unblockWaitingForPacketsToBeSent() {
+        synchronized (blockedLock) {
+            blockedLock.notifyAll();
         }
     }
 
     public void blockNewPacketsAndWaitTillAllSentToClose() throws InterruptedException, NetworkException {
         blocked = true;
         synchronized (packetWrites) {
-            packetWrites.wait();
+            packetWrites.notifyAll();
+        }
+        synchronized (blockedLock) {
+            blockedLock.wait();
         }
         this.networkHolder.stop();
     }
@@ -100,5 +124,10 @@ public abstract class AbstractConnection implements Connection {
 
     private boolean networkHolderInValidState() {
         return networkHolder.isOpened() && !networkHolder.isClosed();
+    }
+
+    @Override
+    public boolean isClosed() {
+        return networkHolder.isClosed();
     }
 }
