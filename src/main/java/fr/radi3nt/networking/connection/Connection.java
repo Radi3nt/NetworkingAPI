@@ -7,4 +7,5 @@ public interface Connection {
 
     void sendPacket(PacketWrite... packets) throws NetworkException;
 
+    boolean isStillOpen();
 }

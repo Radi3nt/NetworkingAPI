@@ -34,7 +34,7 @@ public class ServerConnection extends InteractiveConnection {
         return new ReadySocketNetworkHolder(new SocketNetworkTunnel(socket));
     }
 
-    public boolean isClosed() {
-        return networkHolder.isClosed();
+    public boolean isStillOpen() {
+        return !networkHolder.isClosed();
     }
 }

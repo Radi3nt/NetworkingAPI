@@ -127,7 +127,7 @@ public abstract class AbstractConnection implements Connection {
     }
 
     @Override
-    public boolean isClosed() {
-        return networkHolder.isClosed();
+    public boolean isStillOpen() {
+        return !networkHolder.isClosed();
     }
 }
