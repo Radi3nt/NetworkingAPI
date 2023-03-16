@@ -10,6 +10,8 @@ import fr.radi3nt.networking.packets.buffer.serializers.IntReader;
 import fr.radi3nt.networking.packets.buffer.serializers.IntWriter;
 import fr.radi3nt.networking.protocol.id.PacketProtocolIdentification;
 
+import java.io.IOException;
+
 public class SizedIdPacketProtocol implements PacketProtocol {
 
     private final PacketProtocolIdentification packetProtocolIdentification;
@@ -53,10 +55,19 @@ public class SizedIdPacketProtocol implements PacketProtocol {
 
     @Override
     public PacketRead[] read(ReadablePacketBuffer source) {
-        return new PacketRead[] {decodePacket(source)};
+        try {
+            return new PacketRead[] {decodePacket(source)};
+        } catch (IOException e) {
+            handleIOException(e);
+        }
+        return new PacketRead[] {};
     }
 
-    private PacketRead decodePacket(ReadablePacketBuffer source) {
+    private void handleIOException(IOException e) {
+        e.printStackTrace();
+    }
+
+    private PacketRead decodePacket(ReadablePacketBuffer source) throws IOException {
         source.read(intReader);
         int packetId = intReader.getIntResult();
         PacketRead read = packetProtocolIdentification.fromPacketId(packetId);

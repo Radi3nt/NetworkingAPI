@@ -1,14 +1,15 @@
 package fr.radi3nt.networking.packets.buffer.serializers;
 
-import java.nio.ByteBuffer;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 public class DoubleReader implements PacketDataSerializerReader {
 
     private double doubleToRead;
 
     @Override
-    public void read(ByteBuffer buffer) {
-        doubleToRead = buffer.getDouble();
+    public void read(DataInputStream buffer) throws IOException {
+        doubleToRead = buffer.readDouble();
     }
 
     public double getDoubleToRead() {

@@ -1,9 +1,10 @@
 package fr.radi3nt.networking.packets.buffer.serializers;
 
-import java.nio.ByteBuffer;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 public interface PacketDataSerializerReader {
 
-    void read(ByteBuffer buffer);
+    void read(DataInputStream buffer) throws IOException;
 
 }

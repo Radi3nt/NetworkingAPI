@@ -1,14 +1,15 @@
 package fr.radi3nt.networking.packets.buffer.serializers;
 
-import java.nio.ByteBuffer;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 public class CharReader implements PacketDataSerializerReader {
 
     private char charResult;
 
     @Override
-    public void read(ByteBuffer buffer) {
-        charResult = buffer.getChar();
+    public void read(DataInputStream buffer) throws IOException {
+        charResult = buffer.readChar();
     }
 
     public char getCharResult() {

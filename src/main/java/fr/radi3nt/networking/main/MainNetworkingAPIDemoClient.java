@@ -16,6 +16,7 @@ import fr.radi3nt.networking.protocol.id.PacketFactoryProtocolIdentification;
 import fr.radi3nt.networking.protocol.id.factories.PacketFactory;
 import fr.radi3nt.networking.protocol.id.factories.PacketIdentifier;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -83,7 +84,7 @@ public class MainNetworkingAPIDemoClient {
         public int number;
 
         @Override
-        public void read(ReadablePacketBuffer packetBuffer) {
+        public void read(ReadablePacketBuffer packetBuffer) throws IOException {
             IntReader intReader = new IntReader();
             packetBuffer.read(intReader);
 

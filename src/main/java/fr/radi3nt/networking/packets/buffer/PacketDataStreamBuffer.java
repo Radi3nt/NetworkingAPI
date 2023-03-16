@@ -3,9 +3,10 @@ package fr.radi3nt.networking.packets.buffer;
 import fr.radi3nt.networking.exceptions.EncodeException;
 import fr.radi3nt.networking.packets.buffer.serializers.PacketDataSerializerWriter;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.nio.ByteBuffer;
 
 public class PacketDataStreamBuffer implements WritablePacketBuffer {
 
@@ -37,9 +38,6 @@ public class PacketDataStreamBuffer implements WritablePacketBuffer {
 
     public ReadablePacketBuffer toReadablePacketBuffer() {
         byte[] array = byteArrayOutputStream.toByteArray();
-        ByteBuffer buffer = ByteBuffer.wrap(array);
-        buffer.limit(array.length);
-
-        return new PacketDataByteBuffer(buffer);
+        return new PacketDataByteBuffer(new DataInputStream(new ByteArrayInputStream(array)), array.length);
     }
 }

@@ -71,7 +71,7 @@ public class ExemplePacketReadWrite implements PacketRead, PacketWrite {
     public int number;
 
     @Override
-    public void read(ReadablePacketBuffer packetBuffer) {
+    public void read(ReadablePacketBuffer packetBuffer) throws IOException {
         IntReader intReader = new IntReader();
         packetBuffer.read(intReader);
 

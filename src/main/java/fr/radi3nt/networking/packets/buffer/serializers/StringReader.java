@@ -1,6 +1,7 @@
 package fr.radi3nt.networking.packets.buffer.serializers;
 
-import java.nio.ByteBuffer;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 public class StringReader implements PacketDataSerializerReader {
 
@@ -9,7 +10,7 @@ public class StringReader implements PacketDataSerializerReader {
     private final CharReader charReader = new CharReader();
 
     @Override
-    public void read(ByteBuffer buffer) {
+    public void read(DataInputStream buffer) throws IOException {
         shortReader.read(buffer);
         short stringLength = shortReader.getShortResult();
 

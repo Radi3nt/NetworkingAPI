@@ -6,7 +6,6 @@ import fr.radi3nt.networking.packets.buffer.PacketDataByteBuffer;
 import fr.radi3nt.networking.packets.buffer.ReadablePacketBuffer;
 
 import java.io.*;
-import java.nio.ByteBuffer;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -79,10 +78,7 @@ public class NonBlockingNetworkReader implements NetworkReader {
 
     private void finishPacket() {
         byte[] bytes = receivedPacketInfo.getCurrentRead().bytes();
-        ByteBuffer buffer = ByteBuffer.wrap(bytes);
-        buffer.limit(bytes.length);
-
-        packetBuffers.add(new PacketDataByteBuffer(buffer));
+        packetBuffers.add(new PacketDataByteBuffer(new DataInputStream(new ByteArrayInputStream(bytes)), bytes.length));
         receivedPacketInfo = null;
     }
 
